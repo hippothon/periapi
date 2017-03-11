@@ -147,6 +147,10 @@ class BadCLI:
             inv_check = input("Cap others' broadcasts people you're following invite you to? "
                               "(y/n): ")
             opts["cap_invited"] = bool(inv_check.strip().lower()[:1] == "y")
+
+            pvt_check = input("Only autocap private broadcasts? "
+                              "(y/n): ")
+            opts["cap_privates"] = bool(pvt_check.strip().lower()[:1] == "y")
         else:
             opts = opts_override
         try:

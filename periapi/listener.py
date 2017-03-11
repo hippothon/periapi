@@ -9,7 +9,7 @@ from periapi.broadcast import Broadcast
 class Listener:
     """Class to check notifications stream for new broadcasts and return new broadcast ids"""
 
-    def __init__(self, api, check_backlog=False, cap_invited=False):
+    def __init__(self, api, check_backlog=False, cap_invited=False, cap_privates=False):
 
         self.api = api
 
@@ -18,6 +18,7 @@ class Listener:
 
         self.check_backlog = check_backlog
         self.cap_invited = cap_invited
+        self.cap_privates = cap_privates
         self.no_dls_yet = True
 
     def check_for_new(self):
@@ -59,6 +60,9 @@ class Listener:
     def check_if_wanted(self, broadcast, new_follow):
         """Check if broadcast in notifications string is desired for download"""
         if not (broadcast.islive or broadcast.isreplay):
+            return None
+
+        if self.cap_privates and not broadcast.private:
             return None
 
         if self.check_backlog or broadcast.isnewer or (broadcast.islive and self.no_dls_yet):

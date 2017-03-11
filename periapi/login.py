@@ -172,7 +172,7 @@ class LoginSession(requests.Session):
 
         # Verify that user is registered with Periscope
 
-        test_payload = {"user_id": config["pubid"]}
+        test_payload = {"user_id": config["pubid"], "cookie": config["cookie"]}
         try:
             resp = self.post('https://api.periscope.tv/api/v2/following', json=test_payload)
         except:

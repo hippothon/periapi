@@ -28,7 +28,7 @@ DEFAULT_DL_THREADS = 6
 
 EXTENSIONS = ['.mp4', '.ts']
 FFMPEG_CONVERT = "ffmpeg -y -v quiet -i \"{0}.ts\" -bsf:a aac_adtstoasc -codec copy \"{0}.mp4\""
-FFMPEG_LIVE = "ffmpeg -y -v quiet -i \"{0}\" -c copy \"{1}.ts\""
+FFMPEG_LIVE = "ffmpeg -y -v quiet -headers \"Cookie: {2}\" -i \"{0}\" -c copy \"{1}.ts\""
 
 
 def convert_download(filename):
@@ -102,7 +102,7 @@ class Download:
                 self.broadcast.replay_downloaded = True
                 return True, self.broadcast
 
-            while (self.broadcast.private or self.broadcast.wait_for_replay) \
+            while (self.broadcast.wait_for_replay) \
                     and self.broadcast.islive:
                 time.sleep(FAIL_RESUME_WAIT)
                 self.broadcast.update_info()
@@ -136,6 +136,12 @@ class Download:
 
         access = requests.post(PRIVATE_ACCESS, json=payload).json()
 
+        cookies = ""
+        if access.get('cookies'):
+            for cookie in access.get('cookies'):
+                cookies += "{}={}; ".format(cookie["Name"], cookie["Value"])
+            cookies.strip("; ")
+
         if not access.get('hls_url'):
             raise Exception("Couldn't get live stream download url. Usually means broadcast has"
                             " been deleted/broadcaster has been banned.")
@@ -153,7 +159,7 @@ class Download:
             self.broadcast.dl_times.append(time.time())
             filepaths.append(os.path.join(temp_dir, "chunk{}".format(_)))
 
-            download_command = FFMPEG_LIVE.format(access.get('hls_url'), filepaths[-1])
+            download_command = FFMPEG_LIVE.format(access.get('hls_url'), filepaths[-1], cookies)
             Popen(download_command, shell=True).wait()
 
             self.broadcast.update_info()
